@@ -1,9 +1,10 @@
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Star, Play, X } from 'lucide-react';
+import { Star, Play, X, SquareArrowLeft, SquareArrowRight, Keyboard } from 'lucide-react';
 import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
+import logoUnity from '../../public/assets/logo_unity.svg';
 
 interface SidebarItemProps {
   icon: React.ReactNode;
@@ -81,7 +82,7 @@ interface ProjectData {
 }
 
 const projectData: ProjectData[] = [
-  { id: 1, logo: "/api/placeholder/32/32", title: "Create interactive and explorational flight operations experiences", description: "Unity", backgroundImage: "/api/placeholder/1920/1080", videoThumbnail: "/api/placeholder/640/360", videoSrc: "/path/to/video1.mp4", rating: 5.0 },
+  { id: 1, logo: logoUnity.src, title: "Create1 interactive and explorational flight operations experiences", description: "Unity", backgroundImage: "/assets/bg_1.png", videoThumbnail: "/api/placeholder/640/360", videoSrc: "/path/to/video1.mp4", rating: 5.0 },
   { id: 2, logo: "/api/placeholder/32/32", title: "By leveraging the power of AI, we help make buildings safer, smarter and more secure.", description: "DUCLO", backgroundImage: "/api/placeholder/1920/1080", videoThumbnail: "/api/placeholder/640/360", videoSrc: "/path/to/video2.mp4", rating: 4.8 },
   { id: 3, logo: "/api/placeholder/32/32", title: "Create interactive and explorational flight operations experiences", description: "Unity", backgroundImage: "/api/placeholder/1920/1080", videoThumbnail: "/api/placeholder/640/360", videoSrc: "/path/to/video3.mp4", rating: 4.9 },
   { id: 4, logo: "/api/placeholder/32/32", title: "Create interactive and explorational flight operations experiences", description: "Unity", backgroundImage: "/api/placeholder/1920/1080", videoThumbnail: "/api/placeholder/640/360", videoSrc: "/path/to/video4.mp4", rating: 4.7 },
@@ -170,20 +171,54 @@ const Dashboard: React.FC = () => {
       setScrollIndex(newIndex);
     }
   };
+  
+
+  const handleKeyDown = (e: KeyboardEvent) => {
+    switch (e.key) {
+      case 'ArrowLeft':
+        if (selectedCard.id > 1) {
+          const newSelectedCard = projectData[selectedCard.id - 2];
+          setSelectedCard(newSelectedCard);
+          scrollToCard(newSelectedCard.id);
+        }
+        break;
+      case 'ArrowRight':
+        if (selectedCard.id < projectData.length) {
+          const newSelectedCard = projectData[selectedCard.id];
+          setSelectedCard(newSelectedCard);
+          scrollToCard(newSelectedCard.id);
+        }
+        break;
+    }
+  };
+
+  const scrollToCard = (cardId: number) => {
+    if (carouselRef.current) {
+      const cardWidth = 250; // width of each card
+      const cardSpacing = 16; // space between cards
+      const newScrollPosition = (cardId - 1) * (cardWidth + cardSpacing);
+      carouselRef.current.scrollTo({
+        left: newScrollPosition,
+        behavior: 'smooth'
+      });
+    }
+  };
 
   useEffect(() => {
     handleResize();
     window.addEventListener('resize', handleResize);
+    window.addEventListener('keydown', handleKeyDown);
     if (carouselRef.current) {
       carouselRef.current.addEventListener('scroll', handleScroll);
     }
     return () => {
       window.removeEventListener('resize', handleResize);
+      window.removeEventListener('keydown', handleKeyDown);
       if (carouselRef.current) {
         carouselRef.current.removeEventListener('scroll', handleScroll);
       }
     };
-  }, []);
+  }, [selectedCard.id]); // Add selectedCard.id as a dependency
 
   useEffect(() => {
     // Simulate loading delay
@@ -204,26 +239,25 @@ const Dashboard: React.FC = () => {
   const currentStep = Math.floor((scrollIndex + visibleCards - 1) / visibleCards);
 
   return (
-    <div className="relative flex bg-gray-900 text-white h-screen">
+    <div className="relative flex bg-gray-900 text-white h-screen" tabIndex={0}>
       <div className="absolute inset-0 bg-cover bg-center" style={{backgroundImage: `url(${selectedCard.backgroundImage})`, animation: 'fadeIn 1s forwards' }}></div>
-      <div className="absolute inset-0 bg-black bg-opacity-70"></div>
+      <div className="absolute inset-0"></div>
       <aside className="w-16 bg-red-700 flex flex-col items-center py-4 z-10">
         <SidebarItem icon={<img src="/api/placeholder/24/24" alt="Logo" />} />
-        <SidebarItem icon={<img src="/api/placeholder/24/24" alt="Work" />} />
-        <SidebarItem icon={<img src="/api/placeholder/24/24" alt="People" />} />
-        <SidebarItem icon={<img src="/api/placeholder/24/24" alt="Layers" />} />
-        <SidebarItem icon={<img src="/api/placeholder/24/24" alt="Mail" />} />
+        <SidebarItem icon={<img src="/api/placeholder/24/24" alt="About" />} />
+        <SidebarItem icon={<img src="/api/placeholder/24/24" alt="Careers" />} />
+        <SidebarItem icon={<img src="/api/placeholder/24/24" alt="Contact" />} />
       </aside>
       
-      <main className="flex-1 p-8 z-10 flex flex-col justify-between overflow-hidden">
+      <main className="flex-1 p-4 md:p-20 z-10 flex flex-col justify-between overflow-hidden">
         {isLoading ? (
           <>
-            <div className="flex flex-col md:flex-row justify-between">
-              <div className="max-w-[600px] min-h-[400px]">
+            <div className="flex flex-col md:flex-row items-center justify-between min-h-[400px]">
+              <div className="max-w-[600px]">
                 <header className="mb-8">
                   <SkeletonTheme baseColor="#ccc" highlightColor="#444">
                     <Skeleton circle={true} height={32} width={32} className="mb-4" />
-                    <Skeleton height={32} width={200} className="mb-2" />
+                    <Skeleton height={32} width={400} className="mb-2" />
                     <Skeleton height={16} width={300} className="mb-4" />
                     <Skeleton height={32} width={100} />
                   </SkeletonTheme>
@@ -259,17 +293,17 @@ const Dashboard: React.FC = () => {
           </>
         ) : (
           <>
-            <div className="flex flex-col md:flex-row justify-between">
-              <div className="max-w-[600px] min-h-[400px]">
+            <div className="flex flex-col md:flex-row items-center justify-between min-h-[400px]">
+              <div className="max-w-[600px]">
                 <header className="mb-8">
-                  <img src={selectedCard.logo} alt="Project logo" className="mb-4" style={{ height: '32px', width: '32px' }} />
-                  <h1 className="text-3xl font-bold mb-2" style={{ height: '32px', width: '200px' }}>{selectedCard.title}</h1>
-                  <p className="text-gray-400 mb-4" style={{ height: '16px', width: '300px' }}>An aerospace manufacturing company hired Inceptiv Inc. to design a digital flight demand and operations experience.</p>
-                  <button className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700" style={{ height: '32px', width: '100px' }}>Case Study</button>
+                  <img src={selectedCard.logo} alt="Project logo" className="mb-4" />
+                  <h1 className="text-3xl font-bold mb-2">{selectedCard.title}</h1>
+                  <p className="text-gray-400 mb-4">An aerospace manufacturing company hired Inceptiv Inc. to design a digital flight demand and operations experience.</p>
+                  <button className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Case Study</button>
                 </header>
               </div>
               
-              <div className="flex flex-col md:flex-row items-center mb-8">
+              <div className="flex flex-col md:flex-row mb-8">
                 <div className="relative">
                   <img src={selectedCard.videoThumbnail} alt="Video thumbnail" className="w-full rounded-lg" style={{ width: '200px', height: '150px' }} />
                   <button 
@@ -293,7 +327,7 @@ const Dashboard: React.FC = () => {
             </div>
             
             <div className="relative">
-            <div className="flex justify-end mb-4">
+            <div className="flex md:justify-end justify-center mb-4">
                 {[...Array(totalSteps)].map((_, index) => (
                   <div
                     key={index}
@@ -303,11 +337,12 @@ const Dashboard: React.FC = () => {
               </div>
               <div 
                 ref={carouselRef} 
-                className="flex space-x-4 overflow-x-auto overflow-y-visible scrollbar-hide transition-all duration-500"
+                className="flex space-x-4 items-center overflow-x-auto overflow-y-visible scrollbar-hide transition-all duration-500"
                 onMouseDown={handleMouseDown}
                 onMouseLeave={handleMouseLeave}
                 onMouseUp={handleMouseUp}
                 onMouseMove={handleMouseMove}
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
               >
                 {projectData.map((project, index) => (
                   <ProjectCard
@@ -339,6 +374,13 @@ const Dashboard: React.FC = () => {
           </>
         )}
       </main>
+      <div className="absolute bottom-8 hidden md:flex right-0 transform -translate-x-1/2 bg-black bg-opacity-50 text-white px-4 py-2 rounded-full items-center space-x-2">
+        <SquareArrowLeft size={16} />
+        <Keyboard size={20} />
+        {/* <span className="text-sm">Use arrow keys to navigate</span> */}
+        <SquareArrowRight size={16} />
+      </div>
+
 
     <VideoModal 
         isOpen={isVideoModalOpen} 
